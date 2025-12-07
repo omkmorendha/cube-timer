@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -6,7 +6,12 @@ export const metadata: Metadata = {
   description: 'A minimalist speedcubing timer with WCA-style scrambles, solve tracking, and statistics.',
   keywords: ['speedcubing', 'rubiks cube', 'timer', 'cubing', 'wca'],
   authors: [{ name: 'Cube Timer' }],
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: '#0a0a0a',
 };
 
