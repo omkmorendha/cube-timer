@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   description: 'A minimalist speedcubing timer with WCA-style scrambles, solve tracking, and statistics.',
   keywords: ['speedcubing', 'rubiks cube', 'timer', 'cubing', 'wca'],
   authors: [{ name: 'Cube Timer' }],
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport: Viewport = {
