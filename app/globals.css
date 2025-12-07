@@ -4,16 +4,16 @@
 
 /* Custom Theme Configuration */
 @theme {
-  /* Colors - Neo-brutalist palette */
-  --color-cube-black: #0a0a0a;
-  --color-cube-white: #f5f5f0;
-  --color-cube-yellow: #ffd93d;
-  --color-cube-red: #ff4757;
-  --color-cube-green: #2ed573;
-  --color-cube-blue: #3742fa;
-  --color-cube-orange: #ff7f50;
-  --color-cube-gray: #2d3436;
-  --color-cube-cement: #636e72;
+  /* Colors - Reference CSS variables that change with theme */
+  --color-cube-black: var(--cube-black);
+  --color-cube-white: var(--cube-white);
+  --color-cube-yellow: var(--cube-yellow);
+  --color-cube-red: var(--cube-red);
+  --color-cube-green: var(--cube-green);
+  --color-cube-blue: var(--cube-blue);
+  --color-cube-orange: var(--cube-orange);
+  --color-cube-gray: var(--cube-gray);
+  --color-cube-cement: var(--cube-cement);
 
   /* Font families */
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
