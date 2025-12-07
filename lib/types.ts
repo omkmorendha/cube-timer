@@ -12,7 +12,12 @@ export interface Session {
   createdAt: string;
 }
 
-export type TimerState = 'idle' | 'ready' | 'running' | 'stopped';
+export type TimerState = 'idle' | 'ready' | 'inspection' | 'running' | 'stopped';
+
+export interface Settings {
+  inspectionEnabled: boolean;
+  inspectionTime: number; // seconds (default 15)
+}
 
 export interface TimerContextValue {
   time: number;

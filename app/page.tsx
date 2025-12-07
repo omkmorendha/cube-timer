@@ -6,14 +6,36 @@ import { Scramble } from '@/components/Scramble';
 import { SolveActions } from '@/components/SolveActions';
 import { Statistics } from '@/components/Statistics';
 import { SolveList } from '@/components/SolveList';
+import { Settings } from '@/components/Settings';
 import { useTimer } from '@/hooks/useTimer';
 import { useScramble } from '@/hooks/useScramble';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { calculateStatistics } from '@/lib/statistics';
-import { Solve } from '@/lib/types';
+import { Solve, Settings as SettingsType } from '@/lib/types';
+
+const DEFAULT_SETTINGS: SettingsType = {
+  inspectionEnabled: false,
+  inspectionTime: 15,
+};
 
 export default function Home() {
-  const { time, state, setReady, startTimer, stopTimer, resetTimer, cancelReady } = useTimer();
+  const [settings, setSettings] = useLocalStorage<SettingsType>('cube-timer-settings', DEFAULT_SETTINGS);
+
+  const {
+    time,
+    inspectionTime,
+    state,
+    setReady,
+    startInspection,
+    startTimer,
+    stopTimer,
+    resetTimer,
+    cancelReady,
+  } = useTimer({
+    inspectionEnabled: settings.inspectionEnabled,
+    inspectionTime: settings.inspectionTime,
+  });
+
   const { scramble, generateNewScramble, isLoaded: scrambleLoaded } = useScramble();
   const [solves, setSolves, clearSolves] = useLocalStorage<Solve[]>('cube-timer-solves', []);
 
@@ -23,6 +45,11 @@ export default function Home() {
   // Track if space is held
   const spaceHeldRef = useRef(false);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Toggle inspection setting
+  const toggleInspection = useCallback((enabled: boolean) => {
+    setSettings((prev) => ({ ...prev, inspectionEnabled: enabled }));
+  }, [setSettings]);
 
   // Save solve after timer stops
   const saveSolve = useCallback(
@@ -132,6 +159,14 @@ export default function Home() {
 
         spaceHeldRef.current = true;
 
+        // During inspection, holding space prepares for timer start
+        if (state === 'inspection') {
+          holdTimeoutRef.current = setTimeout(() => {
+            setReady();
+          }, 300);
+          return;
+        }
+
         // Start hold timer - need to hold for 300ms to be ready
         if (state === 'idle' || state === 'stopped') {
           holdTimeoutRef.current = setTimeout(() => {
@@ -151,9 +186,14 @@ export default function Home() {
           holdTimeoutRef.current = null;
         }
 
-        // If ready, start timer on release
+        // If ready and inspection is enabled, start inspection
+        // If ready and no inspection, start timer directly
         if (state === 'ready') {
-          startTimer();
+          if (settings.inspectionEnabled) {
+            startInspection();
+          } else {
+            startTimer();
+          }
         } else if (state === 'idle') {
           // Short press in idle - do nothing special
           cancelReady();
@@ -173,7 +213,7 @@ export default function Home() {
         clearTimeout(holdTimeoutRef.current);
       }
     };
-  }, [state, setReady, startTimer, stopTimer, saveSolve, cancelReady]);
+  }, [state, settings.inspectionEnabled, setReady, startInspection, startTimer, stopTimer, saveSolve, cancelReady]);
 
   // Touch/click handler for stopping timer
   const handlePageClick = useCallback(() => {
@@ -202,11 +242,20 @@ export default function Home() {
 
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
         {/* Header */}
-        <header className="text-center mb-8">
-          <h1 className="font-brutal text-2xl sm:text-3xl tracking-[0.5em] text-cube-white mb-2">
-            CUBE<span className="text-cube-yellow">TIMER</span>
-          </h1>
-          <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-cube-yellow to-transparent" />
+        <header className="flex items-center justify-between mb-8">
+          <div className="w-10" /> {/* Spacer for centering */}
+          <div className="text-center">
+            <h1 className="font-brutal text-2xl sm:text-3xl tracking-[0.5em] text-cube-white mb-2">
+              CUBE<span className="text-cube-yellow">TIMER</span>
+            </h1>
+            <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-cube-yellow to-transparent" />
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Settings
+              inspectionEnabled={settings.inspectionEnabled}
+              onToggleInspection={toggleInspection}
+            />
+          </div>
         </header>
 
         {/* Scramble Section */}
@@ -216,7 +265,12 @@ export default function Home() {
 
         {/* Timer Section */}
         <section className="py-12 sm:py-16 md:py-24 flex flex-col items-center justify-center">
-          <Timer time={time} state={state} />
+          <Timer
+            time={time}
+            inspectionTime={inspectionTime}
+            state={state}
+            inspectionEnabled={settings.inspectionEnabled}
+          />
 
           {/* Solve Actions */}
           <div className="mt-8" onClick={(e) => e.stopPropagation()}>
@@ -252,7 +306,7 @@ export default function Home() {
           <div className="h-px w-full bg-cube-gray/30 mb-4" />
           <p className="font-mono text-xs text-cube-cement">
             Hold <kbd className="px-2 py-0.5 bg-cube-gray text-cube-white">SPACE</kbd> to ready,
-            release to start • Tap anywhere to stop
+            release to start{settings.inspectionEnabled ? ' inspection' : ''} • Tap anywhere to stop
           </p>
         </footer>
       </div>
