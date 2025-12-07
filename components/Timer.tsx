@@ -37,15 +37,15 @@ export function Timer({ time, inspectionTime = 15, state, inspectionEnabled = fa
   const instructionText = useMemo(() => {
     switch (state) {
       case 'idle':
-        return inspectionEnabled ? 'HOLD SPACE FOR INSPECTION' : 'HOLD SPACE TO START';
+        return inspectionEnabled ? 'HOLD TO START INSPECTION' : 'HOLD TO START';
       case 'ready':
         return inspectionEnabled ? 'RELEASE TO START INSPECTION' : 'RELEASE TO BEGIN';
       case 'inspection':
-        return 'HOLD SPACE, RELEASE TO START';
+        return 'HOLD, RELEASE TO START';
       case 'running':
         return 'TAP ANYWHERE TO STOP';
       case 'stopped':
-        return 'SPACE FOR NEW SOLVE';
+        return 'HOLD FOR NEW SOLVE';
       default:
         return '';
     }

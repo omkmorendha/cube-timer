@@ -67,6 +67,10 @@ export default function Home() {
   const spaceHeldRef = useRef(false);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Track touch/click hold for mobile
+  const touchHeldRef = useRef(false);
+  const touchHoldTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Mobile collapsible section state
   const [statsExpanded, setStatsExpanded] = useState(true);
   const [historyExpanded, setHistoryExpanded] = useState(false);
@@ -246,13 +250,67 @@ export default function Home() {
     };
   }, [state, settings.inspectionEnabled, setReady, startInspection, startTimer, stopTimer, saveSolve, cancelReady]);
 
-  // Touch/click handler for stopping timer
-  const handlePageClick = useCallback(() => {
+  // Touch/click handlers for timer control
+  const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    // If timer is running, stop it immediately
     if (state === 'running') {
       const finalTime = stopTimer();
       saveSolve(finalTime, scrambleRef.current);
+      return;
     }
-  }, [state, stopTimer, saveSolve]);
+
+    // If already holding, ignore
+    if (touchHeldRef.current) return;
+
+    touchHeldRef.current = true;
+
+    // During inspection, holding prepares for timer start
+    if (state === 'inspection') {
+      touchHoldTimeoutRef.current = setTimeout(() => {
+        setReady();
+      }, 300);
+      return;
+    }
+
+    // Start hold timer - need to hold for 300ms to be ready
+    if (state === 'idle' || state === 'stopped') {
+      touchHoldTimeoutRef.current = setTimeout(() => {
+        setReady();
+      }, 300);
+    }
+  }, [state, stopTimer, saveSolve, setReady]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    // Clear hold timeout if released early
+    if (touchHoldTimeoutRef.current) {
+      clearTimeout(touchHoldTimeoutRef.current);
+      touchHoldTimeoutRef.current = null;
+    }
+
+    // If ready and inspection is enabled, start inspection
+    // If ready and no inspection, start timer directly
+    if (state === 'ready') {
+      if (settings.inspectionEnabled) {
+        startInspection();
+      } else {
+        startTimer();
+      }
+    } else if (state === 'idle') {
+      // Short press in idle - do nothing special
+      cancelReady();
+    }
+
+    touchHeldRef.current = false;
+  }, [state, settings.inspectionEnabled, startInspection, startTimer, cancelReady]);
+
+  // Cleanup touch hold timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (touchHoldTimeoutRef.current) {
+        clearTimeout(touchHoldTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Collapsible section component for mobile
   const CollapsibleSection = ({
@@ -291,7 +349,10 @@ export default function Home() {
   return (
     <main
       className="min-h-screen bg-cube-black bg-grid relative overflow-hidden"
-      onClick={handlePageClick}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleTouchStart}
+      onMouseUp={handleTouchEnd}
     >
       {/* Decorative background elements */}
       <div className="fixed inset-0 pointer-events-none">
@@ -444,9 +505,12 @@ export default function Home() {
         {/* Footer */}
         <footer className="mt-12 text-center">
           <div className="h-px w-full bg-cube-gray/30 mb-4" />
-          <p className="font-mono text-xs text-cube-cement">
-            Hold <kbd className="px-2 py-0.5 bg-cube-gray text-cube-white">SPACE</kbd> to ready,
+          <p className="font-mono text-xs text-cube-cement hidden sm:block">
+            Hold <kbd className="px-2 py-0.5 bg-cube-gray text-cube-white">SPACE</kbd> or click to ready,
             release to start{settings.inspectionEnabled ? ' inspection' : ''} • Tap anywhere to stop
+          </p>
+          <p className="font-mono text-xs text-cube-cement sm:hidden">
+            Hold screen to ready, release to start{settings.inspectionEnabled ? ' inspection' : ''} • Tap to stop
           </p>
           <p className="font-mono text-xs text-cube-cement mt-4">
             <a
