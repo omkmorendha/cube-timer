@@ -9,7 +9,9 @@ A minimalist speedcubing timer web application with WCA-compliant scrambles, rol
 - **Optional Inspection**: 15-second countdown timer (WCA-style) with visual warnings
 - **Statistics**: Auto-calculated best, worst, ao5, ao12, and session mean
 - **Solve Management**: DNF and +2 penalties, delete solves, clear session
-- **Persistent History**: All solves saved to localStorage
+- **Cloud Storage**: Automatic backup to Vercel KV with localStorage fallback
+- **Multi-Device Sync**: Sign in with GitHub/Google to sync across devices
+- **Offline-First**: Works perfectly offline, syncs when online
 - **Responsive Design**: Works seamlessly on desktop and mobile
 
 ## Quick Start
@@ -86,7 +88,22 @@ All statistics follow WCA (World Cube Association) standards:
 
 ## Data Storage
 
-All solves are stored locally in your browser's localStorage. No data is sent to any server. Your solve history persists across browser sessions but is device-specific.
+The app uses a **hybrid storage approach**:
+
+- **localStorage** (Primary): All data stored locally for instant access and offline use
+- **Vercel KV** (Optional): Cloud backup for cross-device sync
+
+### Without Sign-In
+- Data stored only in localStorage (device-specific)
+- Works offline
+- No account required
+
+### With Sign-In
+- Data automatically backed up to cloud
+- Sync across all your devices
+- Offline-first (changes sync when you're back online)
+
+See [SETUP.md](./SETUP.md) for cloud storage configuration.
 
 ## Browser Compatibility
 
