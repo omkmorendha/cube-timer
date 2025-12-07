@@ -322,6 +322,9 @@ WCA-compliant average calculations. Removing best/worst is mandatory. DNF solves
 ### components/Timer.tsx
 Text sizing uses responsive classes (text-7xl → text-9xl). State determines text color (green = ready, white = idle/stopped, yellow = running).
 
+### components/ToggleSwitch.tsx
+Reusable toggle component with proper visual states. OFF state: black background with cement border and gray handle on left. ON state: green background with white handle translated 26px to the right. Uses overflow-hidden to prevent handle from escaping container bounds.
+
 ### hooks/useLocalStorage.ts
 Handles SSR safety by checking for `window` object. Initial state must be serializable to JSON.
 
@@ -342,6 +345,7 @@ npm run lint     # ESLint check
 
 ## Recent Changes
 
+- **Dec 2025**: Fixed toggle switch visual states and handle positioning
 - **Dec 2025**: **Major Layout Redesign** - 3-column desktop layout (settings | timer | history)
 - **Dec 2025**: **Multi-Puzzle Support** - Added 13 cube types (2x2-7x7, WCA puzzles, variations)
 - **Dec 2025**: **Display Customization** - Stats visibility toggles, precision settings

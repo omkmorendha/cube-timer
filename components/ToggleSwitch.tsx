@@ -26,8 +26,8 @@ export function ToggleSwitch({ label, description, checked, onChange }: ToggleSw
       <button
         onClick={() => onChange(!checked)}
         className={`
-          relative w-12 h-6 rounded-none border-2 transition-colors duration-200
-          ${checked ? 'bg-cube-green border-cube-green' : 'bg-cube-gray border-cube-gray'}
+          relative w-12 h-6 rounded-none border-2 transition-colors duration-200 overflow-hidden
+          ${checked ? 'bg-cube-green border-cube-green' : 'bg-cube-black border-cube-cement'}
         `}
         role="switch"
         aria-checked={checked}
@@ -35,9 +35,8 @@ export function ToggleSwitch({ label, description, checked, onChange }: ToggleSw
       >
         <span
           className={`
-            absolute top-0.5 w-4 h-4 bg-cube-black
-            transition-transform duration-200
-            ${checked ? 'translate-x-6' : 'translate-x-0.5'}
+            absolute top-0.5 left-0.5 w-4 h-4 transition-all duration-200
+            ${checked ? 'translate-x-[26px] bg-cube-white' : 'translate-x-0 bg-cube-cement'}
           `}
         />
       </button>
