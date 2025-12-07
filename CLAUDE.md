@@ -325,6 +325,12 @@ Text sizing uses responsive classes (text-7xl → text-9xl). State determines te
 ### components/ToggleSwitch.tsx
 Reusable toggle component with proper visual states. OFF state: black background with cement border and gray handle on left. ON state: green background with white handle translated 26px to the right. Uses overflow-hidden to prevent handle from escaping container bounds.
 
+### components/ThemeToggle.tsx
+Three-button toggle component for theme selection (DARK/LIGHT/AUTO). Active button shows white background with black text, inactive buttons have transparent background with gray text and border. Integrated in both desktop and mobile settings panels.
+
+### hooks/useTheme.ts
+Custom hook that applies theme classes to document root and handles system preference detection. Listens to system color scheme changes when in AUTO mode. Applies 'light-theme' class for light mode, no class for dark mode (default).
+
 ### hooks/useLocalStorage.ts
 Handles SSR safety by checking for `window` object. Initial state must be serializable to JSON.
 
@@ -345,6 +351,7 @@ npm run lint     # ESLint check
 
 ## Recent Changes
 
+- **Dec 2025**: **Theme System** - Added dark/light/auto theme toggle with system preference support
 - **Dec 2025**: Fixed toggle switch visual states and handle positioning
 - **Dec 2025**: **Major Layout Redesign** - 3-column desktop layout (settings | timer | history)
 - **Dec 2025**: **Multi-Puzzle Support** - Added 13 cube types (2x2-7x7, WCA puzzles, variations)
@@ -361,7 +368,6 @@ npm run lint     # ESLint check
 ### Immediate Next Steps
 - Implement WCA-compliant scrambles for all puzzle types (currently only 3x3 and 2x2)
 - Timer precision display formatting (currently just stores setting)
-- Theme system implementation (dark/light/auto)
 
 ### Longer Term
 - Multi-session support with named sessions per cube type
