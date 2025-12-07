@@ -9,7 +9,7 @@ import { SolveList } from '@/components/SolveList';
 import { Settings } from '@/components/Settings';
 import { useTimer } from '@/hooks/useTimer';
 import { useScramble } from '@/hooks/useScramble';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useCloudStorage } from '@/hooks/useCloudStorage';
 import { calculateStatistics } from '@/lib/statistics';
 import { Solve, Settings as SettingsType } from '@/lib/types';
 
@@ -19,7 +19,10 @@ const DEFAULT_SETTINGS: SettingsType = {
 };
 
 export default function Home() {
-  const [settings, setSettings] = useLocalStorage<SettingsType>('cube-timer-settings', DEFAULT_SETTINGS);
+  const [settings, setSettings, clearSettings, settingsSyncStatus] = useCloudStorage<SettingsType>(
+    'cube-timer-settings',
+    DEFAULT_SETTINGS
+  );
 
   const {
     time,
@@ -37,7 +40,10 @@ export default function Home() {
   });
 
   const { scramble, generateNewScramble, isLoaded: scrambleLoaded } = useScramble();
-  const [solves, setSolves, clearSolves] = useLocalStorage<Solve[]>('cube-timer-solves', []);
+  const [solves, setSolves, clearSolves, solvesSyncStatus] = useCloudStorage<Solve[]>(
+    'cube-timer-solves',
+    []
+  );
 
   const lastSolve = solves.length > 0 ? solves[solves.length - 1] : null;
   const stats = useMemo(() => calculateStatistics(solves), [solves]);
@@ -254,6 +260,7 @@ export default function Home() {
             <Settings
               inspectionEnabled={settings.inspectionEnabled}
               onToggleInspection={toggleInspection}
+              syncStatus={solvesSyncStatus}
             />
           </div>
         </header>

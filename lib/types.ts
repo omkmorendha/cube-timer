@@ -53,3 +53,10 @@ export const MOVE_AXES: Record<Move, 'x' | 'y' | 'z'> = {
 
 export const MOVES: Move[] = ['R', 'L', 'U', 'D', 'F', 'B'];
 export const MODIFIERS: Modifier[] = ['', "'", '2'];
+
+// Cloud sync status
+export interface SyncStatus {
+  isSyncing: boolean;
+  lastSyncTime: number | null;
+  error: string | null;
+}

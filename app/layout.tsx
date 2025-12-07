@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { SessionProvider } from '@/components/providers/SessionProvider';
 
 export const metadata: Metadata = {
   title: 'Cube Timer | Speedcubing Timer',
@@ -27,7 +28,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <SessionProvider>{children}</SessionProvider>
+      </body>
     </html>
   );
 }

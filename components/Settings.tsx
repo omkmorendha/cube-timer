@@ -1,13 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { SignInButton } from './Auth/SignInButton';
+import { SyncStatus as SyncStatusComponent } from './SyncStatus';
+import { SyncStatus } from '@/lib/types';
 
 interface SettingsProps {
   inspectionEnabled: boolean;
   onToggleInspection: (enabled: boolean) => void;
+  syncStatus?: SyncStatus;
 }
 
-export function Settings({ inspectionEnabled, onToggleInspection }: SettingsProps) {
+export function Settings({ inspectionEnabled, onToggleInspection, syncStatus }: SettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -115,6 +119,27 @@ export function Settings({ inspectionEnabled, onToggleInspection }: SettingsProp
                 </p>
               </div>
             )}
+
+            <div className="h-px bg-cube-gray my-4" />
+
+            {/* Account & Sync section */}
+            <div className="space-y-3">
+              <h4 className="font-mono text-xs text-cube-cement tracking-wider">ACCOUNT & SYNC</h4>
+
+              <SignInButton />
+
+              {syncStatus && (
+                <div className="mt-2">
+                  <SyncStatusComponent status={syncStatus} />
+                </div>
+              )}
+
+              {syncStatus?.lastSyncTime && (
+                <p className="font-mono text-xs text-cube-cement">
+                  Last synced: {new Date(syncStatus.lastSyncTime).toLocaleTimeString()}
+                </p>
+              )}
+            </div>
           </div>
         </>
       )}
