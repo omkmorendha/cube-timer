@@ -315,6 +315,17 @@ export default function Home() {
             Hold <kbd className="px-2 py-0.5 bg-cube-gray text-cube-white">SPACE</kbd> to ready,
             release to start{settings.inspectionEnabled ? ' inspection' : ''} • Tap anywhere to stop
           </p>
+          <p className="font-mono text-xs text-cube-cement mt-4">
+            <a
+              href="https://github.com/omkmorendha/cube-timer"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cube-yellow hover:text-cube-white transition-colors underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              View on GitHub
+            </a>
+          </p>
         </footer>
       </div>
     </main>
