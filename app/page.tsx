@@ -1,12 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Timer } from '@/components/Timer';
 import { Scramble } from '@/components/Scramble';
 import { SolveActions } from '@/components/SolveActions';
 import { Statistics } from '@/components/Statistics';
 import { SolveList } from '@/components/SolveList';
 import { Settings } from '@/components/Settings';
+import { SettingsPanel } from '@/components/SettingsPanel';
 import { useTimer } from '@/hooks/useTimer';
 import { useScramble } from '@/hooks/useScramble';
 import { useCloudStorage } from '@/hooks/useCloudStorage';
@@ -16,6 +17,16 @@ import { Solve, Settings as SettingsType } from '@/lib/types';
 const DEFAULT_SETTINGS: SettingsType = {
   inspectionEnabled: false,
   inspectionTime: 15,
+  cubeType: '3x3',
+  showMilliseconds: true,
+  visibleStats: {
+    best: true,
+    worst: true,
+    ao5: true,
+    ao12: true,
+    mean: true,
+  },
+  theme: 'dark',
 };
 
 export default function Home() {
@@ -39,20 +50,29 @@ export default function Home() {
     inspectionTime: settings.inspectionTime,
   });
 
-  const { scramble, generateNewScramble, isLoaded: scrambleLoaded } = useScramble();
+  const { scramble, generateNewScramble, isLoaded: scrambleLoaded } = useScramble(settings.cubeType);
   const [solves, setSolves, clearSolves, solvesSyncStatus] = useCloudStorage<Solve[]>(
     'cube-timer-solves',
     []
   );
 
   const lastSolve = solves.length > 0 ? solves[solves.length - 1] : null;
-  const stats = useMemo(() => calculateStatistics(solves), [solves]);
+  const stats = useMemo(() => calculateStatistics(solves, settings.cubeType), [solves, settings.cubeType]);
 
   // Track if space is held
   const spaceHeldRef = useRef(false);
   const holdTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Toggle inspection setting
+  // Mobile collapsible section state
+  const [statsExpanded, setStatsExpanded] = useState(true);
+  const [historyExpanded, setHistoryExpanded] = useState(false);
+
+  // Update settings helper
+  const updateSettings = useCallback((partial: Partial<SettingsType>) => {
+    setSettings((prev) => ({ ...prev, ...partial }));
+  }, [setSettings]);
+
+  // Toggle inspection setting (for mobile Settings component)
   const toggleInspection = useCallback((enabled: boolean) => {
     setSettings((prev) => ({ ...prev, inspectionEnabled: enabled }));
   }, [setSettings]);
@@ -67,11 +87,12 @@ export default function Home() {
         date: new Date().toISOString(),
         dnf: false,
         plusTwo: false,
+        cubeType: settings.cubeType,
       };
       setSolves((prev) => [...prev, newSolve]);
       generateNewScramble();
     },
-    [setSolves, generateNewScramble]
+    [setSolves, generateNewScramble, settings.cubeType]
   );
 
   // Toggle DNF for last solve
@@ -229,6 +250,40 @@ export default function Home() {
     }
   }, [state, stopTimer, saveSolve]);
 
+  // Collapsible section component for mobile
+  const CollapsibleSection = ({
+    title,
+    isExpanded,
+    onToggle,
+    children,
+  }: {
+    title: string;
+    isExpanded: boolean;
+    onToggle: () => void;
+    children: React.ReactNode;
+  }) => (
+    <div className="border-2 border-cube-gray bg-cube-black/30">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
+        className="w-full p-4 flex items-center justify-between font-brutal text-sm tracking-[0.3em] text-cube-cement hover:text-cube-yellow transition-colors"
+      >
+        <span>{title}</span>
+        <svg
+          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isExpanded && <div className="p-4 pt-0">{children}</div>}
+    </div>
+  );
+
   return (
     <main
       className="min-h-screen bg-cube-black bg-grid relative overflow-hidden"
@@ -246,17 +301,18 @@ export default function Home() {
         <div className="absolute bottom-1/3 right-12 w-6 h-6 border-2 border-cube-blue/20 rotate-12" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-[1920px]">
         {/* Header */}
         <header className="flex items-center justify-between mb-8">
-          <div className="w-10" /> {/* Spacer for centering */}
-          <div className="text-center">
+          <div className="w-10 lg:hidden" /> {/* Spacer for centering on mobile */}
+          <div className="text-center lg:flex-1">
             <h1 className="font-brutal text-2xl sm:text-3xl tracking-[0.5em] text-cube-white mb-2">
               CUBE<span className="text-cube-yellow">TIMER</span>
             </h1>
             <div className="h-px w-24 mx-auto bg-gradient-to-r from-transparent via-cube-yellow to-transparent" />
           </div>
-          <div onClick={(e) => e.stopPropagation()}>
+          {/* Mobile settings button (hidden on desktop) */}
+          <div className="lg:hidden" onClick={(e) => e.stopPropagation()}>
             <Settings
               inspectionEnabled={settings.inspectionEnabled}
               onToggleInspection={toggleInspection}
@@ -265,48 +321,119 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Scramble Section */}
-        <section className="mb-8" onClick={(e) => e.stopPropagation()}>
-          <Scramble scramble={scramble} onNewScramble={generateNewScramble} isLoading={!scrambleLoaded} />
-        </section>
-
-        {/* Timer Section */}
-        <section className="py-12 sm:py-16 md:py-24 flex flex-col items-center justify-center">
-          <Timer
-            time={time}
-            inspectionTime={inspectionTime}
-            state={state}
-            inspectionEnabled={settings.inspectionEnabled}
-          />
-
-          {/* Solve Actions */}
-          <div className="mt-8" onClick={(e) => e.stopPropagation()}>
-            <SolveActions
-              onDnf={toggleDnfLastSolve}
-              onPlusTwo={togglePlusTwoLastSolve}
-              onDelete={deleteLastSolve}
-              isDnf={lastSolve?.dnf ?? false}
-              isPlusTwo={lastSolve?.plusTwo ?? false}
-              visible={state === 'stopped' && lastSolve !== null}
+        {/* Desktop 3-Column Layout */}
+        <div className="hidden lg:grid lg:grid-cols-[280px_1fr_320px] lg:gap-6">
+          {/* Left Panel - Settings */}
+          <aside className="space-y-6">
+            <SettingsPanel
+              settings={settings}
+              onUpdateSettings={updateSettings}
+              onClearSession={clearSession}
+              syncStatus={solvesSyncStatus}
             />
+          </aside>
+
+          {/* Center Panel - Timer + Core UI */}
+          <div className="flex flex-col space-y-8">
+            <div onClick={(e) => e.stopPropagation()}>
+              <Scramble scramble={scramble} onNewScramble={generateNewScramble} isLoading={!scrambleLoaded} />
+            </div>
+
+            <div className="flex-1 flex flex-col justify-center py-12">
+              <Timer
+                time={time}
+                inspectionTime={inspectionTime}
+                state={state}
+                inspectionEnabled={settings.inspectionEnabled}
+              />
+
+              <div className="mt-8" onClick={(e) => e.stopPropagation()}>
+                <SolveActions
+                  onDnf={toggleDnfLastSolve}
+                  onPlusTwo={togglePlusTwoLastSolve}
+                  onDelete={deleteLastSolve}
+                  isDnf={lastSolve?.dnf ?? false}
+                  isPlusTwo={lastSolve?.plusTwo ?? false}
+                  visible={state === 'stopped' && lastSolve !== null}
+                />
+              </div>
+            </div>
+
+            <div onClick={(e) => e.stopPropagation()}>
+              <Statistics stats={stats} visibleStats={settings.visibleStats} />
+            </div>
           </div>
-        </section>
 
-        {/* Statistics Section */}
-        <section className="mb-8" onClick={(e) => e.stopPropagation()}>
-          <Statistics stats={stats} />
-        </section>
+          {/* Right Panel - History */}
+          <aside>
+            <div onClick={(e) => e.stopPropagation()}>
+              <SolveList
+                solves={solves}
+                onToggleDnf={toggleDnf}
+                onTogglePlusTwo={togglePlusTwo}
+                onDelete={deleteSolve}
+                onClearSession={clearSession}
+              />
+            </div>
+          </aside>
+        </div>
 
-        {/* Solve History Section */}
-        <section onClick={(e) => e.stopPropagation()}>
-          <SolveList
-            solves={solves}
-            onToggleDnf={toggleDnf}
-            onTogglePlusTwo={togglePlusTwo}
-            onDelete={deleteSolve}
-            onClearSession={clearSession}
-          />
-        </section>
+        {/* Mobile/Tablet Layout */}
+        <div className="lg:hidden space-y-4">
+          {/* Scramble - always visible */}
+          <section onClick={(e) => e.stopPropagation()}>
+            <Scramble scramble={scramble} onNewScramble={generateNewScramble} isLoading={!scrambleLoaded} />
+          </section>
+
+          {/* Timer - always visible */}
+          <section className="py-12 sm:py-16 md:py-24 flex flex-col items-center justify-center">
+            <Timer
+              time={time}
+              inspectionTime={inspectionTime}
+              state={state}
+              inspectionEnabled={settings.inspectionEnabled}
+            />
+
+            <div className="mt-8" onClick={(e) => e.stopPropagation()}>
+              <SolveActions
+                onDnf={toggleDnfLastSolve}
+                onPlusTwo={togglePlusTwoLastSolve}
+                onDelete={deleteLastSolve}
+                isDnf={lastSolve?.dnf ?? false}
+                isPlusTwo={lastSolve?.plusTwo ?? false}
+                visible={state === 'stopped' && lastSolve !== null}
+              />
+            </div>
+          </section>
+
+          {/* Collapsible Statistics */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <CollapsibleSection
+              title="STATISTICS"
+              isExpanded={statsExpanded}
+              onToggle={() => setStatsExpanded(!statsExpanded)}
+            >
+              <Statistics stats={stats} visibleStats={settings.visibleStats} />
+            </CollapsibleSection>
+          </div>
+
+          {/* Collapsible History */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <CollapsibleSection
+              title="HISTORY"
+              isExpanded={historyExpanded}
+              onToggle={() => setHistoryExpanded(!historyExpanded)}
+            >
+              <SolveList
+                solves={solves}
+                onToggleDnf={toggleDnf}
+                onTogglePlusTwo={togglePlusTwo}
+                onDelete={deleteSolve}
+                onClearSession={clearSession}
+              />
+            </CollapsibleSection>
+          </div>
+        </div>
 
         {/* Footer */}
         <footer className="mt-12 text-center">

@@ -199,30 +199,48 @@ export function SolveList({
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="h-px flex-1 bg-cube-gray" />
-          <span className="font-brutal text-xs tracking-[0.4em] text-cube-cement">HISTORY</span>
-          <div className="h-px flex-1 bg-cube-gray" />
+      {/* Header - Desktop: Vertical layout, Mobile: Horizontal layout */}
+      <div className="mb-4">
+        {/* Desktop header */}
+        <div className="hidden lg:block">
+          <h2 className="font-brutal text-sm tracking-[0.3em] text-cube-cement mb-2">
+            HISTORY
+          </h2>
+          <div className="h-px bg-cube-gray mb-4" />
+          <button
+            onClick={onClearSession}
+            className="w-full px-3 py-2 text-xs font-brutal tracking-wider
+                       text-cube-gray hover:text-cube-red
+                       border border-transparent hover:border-cube-red
+                       transition-all duration-150"
+          >
+            CLEAR ALL
+          </button>
         </div>
 
-        {/* Clear session button */}
-        <button
-          onClick={onClearSession}
-          className="
-            ml-4 px-3 py-1 text-xs font-brutal tracking-wider
-            text-cube-gray hover:text-cube-red
-            border border-transparent hover:border-cube-red
-            transition-all duration-150
-          "
-        >
-          CLEAR ALL
-        </button>
+        {/* Mobile/Tablet header */}
+        <div className="lg:hidden flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="h-px flex-1 bg-cube-gray" />
+            <span className="font-brutal text-xs tracking-[0.4em] text-cube-cement">HISTORY</span>
+            <div className="h-px flex-1 bg-cube-gray" />
+          </div>
+          <button
+            onClick={onClearSession}
+            className="ml-4 px-3 py-1 text-xs font-brutal tracking-wider
+                       text-cube-gray hover:text-cube-red
+                       border border-transparent hover:border-cube-red
+                       transition-all duration-150"
+          >
+            CLEAR ALL
+          </button>
+        </div>
       </div>
 
-      {/* Solve list */}
-      <div className="border-2 border-cube-gray bg-cube-black/30 max-h-[400px] overflow-y-auto">
+      {/* Solve list - Responsive height */}
+      <div className="border-2 border-cube-gray bg-cube-black/30
+                      max-h-[400px] lg:max-h-[calc(100vh-280px)]
+                      overflow-y-auto sticky lg:top-4">
         {reversedSolves.map((solve, displayIndex) => {
           const originalIndex = solves.length - 1 - displayIndex;
           return (

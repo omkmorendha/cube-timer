@@ -10,7 +10,7 @@ export function Scramble({ scramble, onNewScramble, isLoading }: ScrambleProps) 
   const moves = scramble ? scramble.split(' ').filter(Boolean) : [];
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full">
       {/* Header with decorative line */}
       <div className="flex items-center gap-4 mb-4">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-cube-cement to-transparent" />

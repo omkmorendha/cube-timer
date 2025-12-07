@@ -1,3 +1,18 @@
+export type CubeType =
+  | '2x2'
+  | '3x3'
+  | '4x4'
+  | '5x5'
+  | '6x6'
+  | '7x7'
+  | 'pyraminx'
+  | 'megaminx'
+  | 'skewb'
+  | 'clock'
+  | 'sq1'
+  | 'oh'
+  | 'bld';
+
 export interface Solve {
   id: string;
   time: number; // milliseconds
@@ -5,6 +20,7 @@ export interface Solve {
   date: string; // ISO timestamp
   dnf: boolean;
   plusTwo: boolean;
+  cubeType: CubeType; // Puzzle type for this solve
 }
 
 export interface Session {
@@ -14,9 +30,21 @@ export interface Session {
 
 export type TimerState = 'idle' | 'ready' | 'inspection' | 'running' | 'stopped';
 
+export interface VisibleStats {
+  best: boolean;
+  worst: boolean;
+  ao5: boolean;
+  ao12: boolean;
+  mean: boolean;
+}
+
 export interface Settings {
   inspectionEnabled: boolean;
   inspectionTime: number; // seconds (default 15)
+  cubeType: CubeType; // Current puzzle type
+  showMilliseconds: boolean; // Timer precision toggle
+  visibleStats: VisibleStats; // Which stats to display
+  theme?: 'dark' | 'light' | 'auto'; // Theme preference (placeholder for future)
 }
 
 export interface TimerContextValue {

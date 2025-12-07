@@ -48,14 +48,20 @@ export function useCloudStorage<T>(
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
-        setStoredValue(JSON.parse(item));
+        const parsed = JSON.parse(item);
+        // Merge stored value with initialValue to ensure all new fields have defaults
+        if (typeof initialValue === 'object' && initialValue !== null && !Array.isArray(initialValue)) {
+          setStoredValue({ ...initialValue, ...parsed } as T);
+        } else {
+          setStoredValue(parsed);
+        }
       }
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
     } finally {
       setIsInitialized(true);
     }
-  }, [key]);
+  }, [key, initialValue]);
 
   // Sync to cloud (with retry logic)
   const syncToCloud = useCallback(

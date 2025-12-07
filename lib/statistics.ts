@@ -1,4 +1,4 @@
-import { Solve, Statistics } from './types';
+import { Solve, Statistics, CubeType } from './types';
 
 /**
  * Gets the effective time for a solve (including +2 penalty)
@@ -81,15 +81,22 @@ export function getWorstSingle(solves: Solve[]): number | null {
 
 /**
  * Calculates all statistics for a session
+ * Optionally filter by cube type
  */
-export function calculateStatistics(solves: Solve[]): Statistics {
+export function calculateStatistics(solves: Solve[], cubeType?: CubeType): Statistics {
+  // Filter solves by cube type if specified
+  // For backwards compatibility, solves without cubeType default to '3x3'
+  const filteredSolves = cubeType
+    ? solves.filter((s) => (s.cubeType || '3x3') === cubeType)
+    : solves;
+
   return {
-    best: getBestSingle(solves),
-    worst: getWorstSingle(solves),
-    ao5: calculateAo5(solves),
-    ao12: calculateAo12(solves),
-    mean: calculateMean(solves),
-    count: solves.length,
+    best: getBestSingle(filteredSolves),
+    worst: getWorstSingle(filteredSolves),
+    ao5: calculateAo5(filteredSolves),
+    ao12: calculateAo12(filteredSolves),
+    mean: calculateMean(filteredSolves),
+    count: filteredSolves.length,
   };
 }
 

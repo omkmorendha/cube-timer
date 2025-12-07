@@ -22,27 +22,75 @@ A minimalist speedcubing timer web application built with Next.js 16, React 19, 
 cube-timer/
 ├── app/
 │   ├── layout.tsx           # Root layout with fonts and metadata
-│   ├── page.tsx             # Main timer page with state orchestration
+│   ├── page.tsx             # Main timer page with 3-column desktop layout
 │   ├── not-found.tsx        # 404 page
 │   └── globals.css          # Tailwind config and custom styles
 ├── components/
 │   ├── Timer.tsx            # Timer display with visual states
 │   ├── Scramble.tsx         # Scramble display with manual refresh
-│   ├── SolveList.tsx        # History list with expand/collapse
-│   ├── Statistics.tsx       # Stats panel (best, ao5, ao12, mean)
+│   ├── SolveList.tsx        # History list (sidebar on desktop)
+│   ├── Statistics.tsx       # Stats panel with conditional visibility
 │   ├── SolveActions.tsx     # DNF/+2/Delete buttons
-│   └── Settings.tsx         # Settings panel (inspection toggle)
+│   ├── Settings.tsx         # Mobile settings dropdown
+│   ├── SettingsPanel.tsx    # Desktop inline settings panel
+│   ├── ToggleSwitch.tsx     # Reusable toggle component
+│   ├── CubeTypeSelector.tsx # Cube type dropdown selector
+│   └── StatsVisibilityToggles.tsx # Stats visibility checkboxes
 ├── hooks/
 │   ├── useTimer.ts          # Timer state machine logic
-│   ├── useScramble.ts       # Scramble generation hook
-│   └── useLocalStorage.ts   # Persistent state hook
+│   ├── useScramble.ts       # Scramble generation (cube type aware)
+│   └── useCloudStorage.ts   # Vercel KV cloud storage hook
 ├── lib/
-│   ├── types.ts             # TypeScript interfaces and types
-│   ├── scrambleGenerator.ts # WCA-compliant scramble algorithm
-│   └── statistics.ts        # WCA-standard statistics calculations
+│   ├── types.ts             # TypeScript interfaces (extended)
+│   ├── scrambleGenerator.ts # 3x3 WCA-compliant algorithm
+│   ├── scrambleGenerators/
+│   │   └── index.ts         # Multi-puzzle scramble generator
+│   └── statistics.ts        # WCA statistics (cube type filtered)
 └── public/
     └── favicon.ico          # Rubik's cube favicon
 ```
+
+### Layout Architecture (Desktop: 1024px+)
+
+**3-Column Grid Layout** (`grid-cols-[280px_1fr_320px] gap-6`):
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                           HEADER (Full Width)                       │
+├───────────────┬─────────────────────────────────┬──────────────────┤
+│  LEFT PANEL   │         CENTER PANEL            │   RIGHT PANEL    │
+│  (280px)      │         (Flexible)              │   (320px)        │
+│               │                                 │                  │
+│ SettingsPanel │ ┌───────────────────────┐       │ SolveList        │
+│ (sticky)      │ │ Scramble              │       │ (sticky)         │
+│               │ └───────────────────────┘       │                  │
+│ • Cube Type   │                                 │ • History        │
+│ • Inspection  │ ┌───────────────────────┐       │ • Scrollable     │
+│ • Precision   │ │                       │       │ • Max-height     │
+│ • Stat Vis.   │ │   TIMER (Hero)        │       │   calc(100vh-    │
+│ • Account     │ │                       │       │   280px)         │
+│ • Session     │ └───────────────────────┘       │                  │
+│               │                                 │                  │
+│               │ ┌───────────────────────┐       │                  │
+│               │ │ Statistics            │       │                  │
+│               │ └───────────────────────┘       │                  │
+└───────────────┴─────────────────────────────────┴──────────────────┘
+```
+
+**Mobile Layout (<1024px)**: Vertical stack with collapsible sections
+- Settings: Dropdown button (top-right)
+- Scramble: Always visible
+- Timer: Always visible (centered)
+- Statistics: Collapsible accordion
+- History: Collapsible accordion
+
+### Responsive Strategy
+
+| Breakpoint | Layout | Timer Size | Stats Grid | Side Panels |
+|-----------|--------|-----------|-----------|-------------|
+| < 640px   | Vertical | text-8rem | 2 cols | Hidden |
+| 640-1023px | Vertical | text-10rem | 3 cols | Hidden |
+| 1024px+   | 3-column | text-14-18rem | Dynamic | Visible (sticky) |
 
 ## Key Implementation Details
 
@@ -62,9 +110,9 @@ cube-timer/
 - Press SPACE or tap anywhere during `running` → stop timer
 - Keyboard events ignored when typing in inputs
 
-### Scramble Generation (lib/scrambleGenerator.ts)
+### Scramble Generation
 
-**Algorithm**:
+**3x3 Algorithm** (lib/scrambleGenerator.ts):
 - Generates 20 random moves for 3x3 cube
 - Moves: R, L, U, D, F, B
 - Modifiers: '', ' (prime), 2 (double)
@@ -75,6 +123,12 @@ cube-timer/
 - x-axis: R, L
 - y-axis: U, D
 - z-axis: F, B
+
+**Multi-Puzzle Support** (lib/scrambleGenerators/index.ts):
+- `generateScrambleForCubeType(type: CubeType): string`
+- Supported cube types: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7, Pyraminx, Megaminx, Skewb, Clock, Square-1, OH, BLD
+- Currently: 3x3 and 2x2 have proper implementations, others use placeholder scrambles
+- Future: Add WCA-compliant scrambles for all puzzle types
 
 ### Statistics Calculation (lib/statistics.ts)
 
@@ -100,9 +154,27 @@ All statistics follow WCA standards:
 - +2 penalty adds 2000ms to time
 - Time stored in milliseconds
 
+**Cube Type Filtering**:
+- `calculateStatistics(solves, cubeType?)` accepts optional cube type filter
+- Statistics calculated only for solves matching the current cube type
+- Backwards compatible: Solves without `cubeType` default to '3x3'
+
 ### Data Model (lib/types.ts)
 
 ```typescript
+type CubeType =
+  | '2x2' | '3x3' | '4x4' | '5x5' | '6x6' | '7x7'
+  | 'pyraminx' | 'megaminx' | 'skewb' | 'clock' | 'sq1'
+  | 'oh' | 'bld';
+
+interface VisibleStats {
+  best: boolean;
+  worst: boolean;
+  ao5: boolean;
+  ao12: boolean;
+  mean: boolean;
+}
+
 interface Solve {
   id: string;          // UUID
   time: number;        // milliseconds (raw time, no penalty)
@@ -110,11 +182,16 @@ interface Solve {
   date: string;        // ISO 8601 timestamp
   dnf: boolean;        // Did Not Finish flag
   plusTwo: boolean;    // +2 penalty flag (mutually exclusive with DNF)
+  cubeType: CubeType;  // Puzzle type for this solve
 }
 
 interface Settings {
-  inspectionEnabled: boolean;  // Toggle 15s inspection timer
-  inspectionTime: number;      // Default: 15 seconds
+  inspectionEnabled: boolean;   // Toggle 15s inspection timer
+  inspectionTime: number;       // Default: 15 seconds
+  cubeType: CubeType;           // Current puzzle type
+  showMilliseconds: boolean;    // Timer precision toggle
+  visibleStats: VisibleStats;   // Which stats to display
+  theme?: 'dark' | 'light' | 'auto'; // Theme preference (placeholder)
 }
 ```
 
@@ -265,22 +342,30 @@ npm run lint     # ESLint check
 
 ## Recent Changes
 
+- **Dec 2025**: **Major Layout Redesign** - 3-column desktop layout (settings | timer | history)
+- **Dec 2025**: **Multi-Puzzle Support** - Added 13 cube types (2x2-7x7, WCA puzzles, variations)
+- **Dec 2025**: **Display Customization** - Stats visibility toggles, precision settings
+- **Dec 2025**: **Mobile Enhancements** - Collapsible sections for statistics and history
 - **Dec 2025**: Added optional 15-second WCA-style inspection timer
 - **Dec 2025**: Added Rubik's cube favicon with proper metadata
 - **Dec 2025**: Fixed Tailwind v4 PostCSS configuration
 - **Dec 2025**: Fixed scramble hydration mismatch (client-side generation)
 - **Dec 2025**: Initial MVP implementation with timer, scrambles, stats, and history
 
-## Future Enhancements (Out of Scope for MVP)
+## Future Enhancements
 
-- Multi-session support with named sessions
+### Immediate Next Steps
+- Implement WCA-compliant scrambles for all puzzle types (currently only 3x3 and 2x2)
+- Timer precision display formatting (currently just stores setting)
+- Theme system implementation (dark/light/auto)
+
+### Longer Term
+- Multi-session support with named sessions per cube type
 - Export/import solve data (CSV, JSON)
-- Multiple puzzle types (2x2, 4x4, Pyraminx, etc.)
-- User accounts and cloud sync
-- Theming system (dark/light/custom)
 - Virtual cube visualization
 - Training modes (F2L, OLL, PLL)
 - Solve analytics and graphs
+- Advanced statistics (rolling ao100, session graphs)
 
 ## Contributing
 
