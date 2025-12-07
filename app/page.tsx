@@ -11,6 +11,7 @@ import { SettingsPanel } from '@/components/SettingsPanel';
 import { useTimer } from '@/hooks/useTimer';
 import { useScramble } from '@/hooks/useScramble';
 import { useCloudStorage } from '@/hooks/useCloudStorage';
+import { useTheme } from '@/hooks/useTheme';
 import { calculateStatistics } from '@/lib/statistics';
 import { Solve, Settings as SettingsType } from '@/lib/types';
 
@@ -55,6 +56,9 @@ export default function Home() {
     'cube-timer-solves',
     []
   );
+
+  // Apply theme
+  useTheme(settings.theme || 'dark');
 
   const lastSolve = solves.length > 0 ? solves[solves.length - 1] : null;
   const stats = useMemo(() => calculateStatistics(solves, settings.cubeType), [solves, settings.cubeType]);
@@ -316,6 +320,8 @@ export default function Home() {
             <Settings
               inspectionEnabled={settings.inspectionEnabled}
               onToggleInspection={toggleInspection}
+              theme={settings.theme || 'dark'}
+              onThemeChange={(theme) => updateSettings({ theme })}
               syncStatus={solvesSyncStatus}
             />
           </div>

@@ -6,6 +6,7 @@ import { ToggleSwitch } from './ToggleSwitch';
 import { StatsVisibilityToggles } from './StatsVisibilityToggles';
 import { SignInButton } from './Auth/SignInButton';
 import { SyncStatus as SyncStatusComponent } from './SyncStatus';
+import { ThemeToggle } from './ThemeToggle';
 
 interface SettingsPanelProps {
   settings: Settings;
@@ -88,10 +89,17 @@ export function SettingsPanel({
         <h3 className="font-mono text-xs text-cube-cement mb-3 tracking-wider">
           DISPLAY
         </h3>
-        <StatsVisibilityToggles
-          visible={visibleStats}
-          onChange={(stats) => onUpdateSettings({ visibleStats: stats })}
-        />
+        <div className="space-y-4">
+          <ThemeToggle
+            theme={settings.theme || 'dark'}
+            onChange={(theme) => onUpdateSettings({ theme })}
+          />
+          <div className="h-px bg-cube-gray my-3" />
+          <StatsVisibilityToggles
+            visible={visibleStats}
+            onChange={(stats) => onUpdateSettings({ visibleStats: stats })}
+          />
+        </div>
       </section>
 
       {/* Section: Account & Sync */}

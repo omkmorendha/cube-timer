@@ -4,14 +4,17 @@ import { useState } from 'react';
 import { SignInButton } from './Auth/SignInButton';
 import { SyncStatus as SyncStatusComponent } from './SyncStatus';
 import { SyncStatus } from '@/lib/types';
+import { ThemeToggle } from './ThemeToggle';
 
 interface SettingsProps {
   inspectionEnabled: boolean;
   onToggleInspection: (enabled: boolean) => void;
+  theme: 'dark' | 'light' | 'auto';
+  onThemeChange: (theme: 'dark' | 'light' | 'auto') => void;
   syncStatus?: SyncStatus;
 }
 
-export function Settings({ inspectionEnabled, onToggleInspection, syncStatus }: SettingsProps) {
+export function Settings({ inspectionEnabled, onToggleInspection, theme, onThemeChange, syncStatus }: SettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -75,6 +78,13 @@ export function Settings({ inspectionEnabled, onToggleInspection, syncStatus }: 
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+            </div>
+
+            <div className="h-px bg-cube-gray mb-4" />
+
+            {/* Theme Toggle */}
+            <div className="mb-4">
+              <ThemeToggle theme={theme} onChange={onThemeChange} />
             </div>
 
             <div className="h-px bg-cube-gray mb-4" />

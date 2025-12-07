@@ -99,6 +99,19 @@
   --cube-cement: #636e72;
 }
 
+/* Light mode variables */
+.light-theme {
+  --cube-black: #f5f5f0;
+  --cube-white: #0a0a0a;
+  --cube-yellow: #ffa500;
+  --cube-red: #dc2626;
+  --cube-green: #16a34a;
+  --cube-blue: #2563eb;
+  --cube-orange: #ea580c;
+  --cube-gray: #e5e5e5;
+  --cube-cement: #a1a1aa;
+}
+
 * {
   box-sizing: border-box;
 }
