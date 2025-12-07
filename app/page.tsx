@@ -14,7 +14,7 @@ import { Solve } from '@/lib/types';
 
 export default function Home() {
   const { time, state, setReady, startTimer, stopTimer, resetTimer, cancelReady } = useTimer();
-  const { scramble, generateNewScramble } = useScramble();
+  const { scramble, generateNewScramble, isLoaded: scrambleLoaded } = useScramble();
   const [solves, setSolves, clearSolves] = useLocalStorage<Solve[]>('cube-timer-solves', []);
 
   const lastSolve = solves.length > 0 ? solves[solves.length - 1] : null;
@@ -211,7 +211,7 @@ export default function Home() {
 
         {/* Scramble Section */}
         <section className="mb-8" onClick={(e) => e.stopPropagation()}>
-          <Scramble scramble={scramble} onNewScramble={generateNewScramble} />
+          <Scramble scramble={scramble} onNewScramble={generateNewScramble} isLoading={!scrambleLoaded} />
         </section>
 
         {/* Timer Section */}
