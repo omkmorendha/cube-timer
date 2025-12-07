@@ -39,6 +39,7 @@ export function useCloudStorage<T>(
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const retryCountRef = useRef(0);
+  const initialValueRef = useRef(initialValue);
   const MAX_RETRIES = 5;
 
   // Initialize from localStorage on mount
@@ -49,9 +50,10 @@ export function useCloudStorage<T>(
       const item = window.localStorage.getItem(key);
       if (item) {
         const parsed = JSON.parse(item);
+        const initial = initialValueRef.current;
         // Merge stored value with initialValue to ensure all new fields have defaults
-        if (typeof initialValue === 'object' && initialValue !== null && !Array.isArray(initialValue)) {
-          setStoredValue({ ...initialValue, ...parsed } as T);
+        if (typeof initial === 'object' && initial !== null && !Array.isArray(initial)) {
+          setStoredValue({ ...initial, ...parsed } as T);
         } else {
           setStoredValue(parsed);
         }
@@ -61,7 +63,7 @@ export function useCloudStorage<T>(
     } finally {
       setIsInitialized(true);
     }
-  }, [key, initialValue]);
+  }, [key]);
 
   // Sync to cloud (with retry logic)
   const syncToCloud = useCallback(
