@@ -1,8 +1,90 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Custom Theme Configuration */
+@theme {
+  /* Colors - Neo-brutalist palette */
+  --color-cube-black: #0a0a0a;
+  --color-cube-white: #f5f5f0;
+  --color-cube-yellow: #ffd93d;
+  --color-cube-red: #ff4757;
+  --color-cube-green: #2ed573;
+  --color-cube-blue: #3742fa;
+  --color-cube-orange: #ff7f50;
+  --color-cube-gray: #2d3436;
+  --color-cube-cement: #636e72;
+
+  /* Font families */
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-display: "Space Grotesk", "Archivo Black", sans-serif;
+  --font-brutal: "Bebas Neue", "Oswald", sans-serif;
+
+  /* Custom animations */
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shake: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+  --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-slide-down: slideDown 0.3s ease-out;
+  --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-bounce-in: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --animate-count: count 0.1s ease-out;
+  --animate-ready-pulse: readyPulse 0.8s ease-in-out infinite;
+
+  /* Box shadows */
+  --shadow-brutal: 8px 8px 0px 0px #0a0a0a;
+  --shadow-brutal-sm: 4px 4px 0px 0px #0a0a0a;
+  --shadow-brutal-lg: 12px 12px 0px 0px #0a0a0a;
+  --shadow-brutal-yellow: 8px 8px 0px 0px #ffd93d;
+  --shadow-brutal-green: 8px 8px 0px 0px #2ed573;
+  --shadow-brutal-red: 8px 8px 0px 0px #ff4757;
+  --shadow-inner-brutal: inset 4px 4px 0px 0px rgba(0,0,0,0.2);
+
+  /* Keyframes */
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+  }
+
+  @keyframes glow {
+    0% { box-shadow: 0 0 20px rgba(255, 217, 61, 0.4); }
+    100% { box-shadow: 0 0 40px rgba(255, 217, 61, 0.8); }
+  }
+
+  @keyframes slideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes slideDown {
+    0% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes count {
+    0% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes readyPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.02); opacity: 0.9; }
+  }
+}
 
 /* Base styles */
 :root {
@@ -87,28 +169,26 @@ body::before {
   outline-offset: 2px;
 }
 
-/* Utility classes */
-@layer utilities {
-  .text-shadow-glow {
-    text-shadow: 0 0 40px currentColor;
-  }
+/* Background utility classes */
+@utility bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
 
-  .bg-grid {
-    background-image:
-      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-  }
+@utility bg-diagonal-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 255, 255, 0.02) 10px,
+    rgba(255, 255, 255, 0.02) 20px
+  );
+}
 
-  .bg-diagonal-lines {
-    background-image: repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 10px,
-      rgba(255, 255, 255, 0.02) 10px,
-      rgba(255, 255, 255, 0.02) 20px
-    );
-  }
+@utility text-shadow-glow {
+  text-shadow: 0 0 40px currentColor;
 }
 
 /* Timer-specific animations */
